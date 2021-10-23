@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -103,8 +104,15 @@ The filepath will be generated from the config.yaml and written to result/ dir.
 			fmt.Fprintf(os.Stderr, "Could not read config file. Error: %v\n", err)
 			os.Exit(1)
 		}
+		string_data := string(data)
 		var out interface{}
-		err = yaml.Unmarshal(data, &out)
+		if string_data[0] == '{' || string_data[0] == '[' {
+			fmt.Fprintf(os.Stdout, "File passed is in json format.")
+			err = json.Unmarshal(data, &out)
+		} else {
+			fmt.Fprintf(os.Stdout, "File passed is in yaml format.")
+			err = yaml.Unmarshal(data, &out)
+		}
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Could not convert file to yaml. Error: %v\n", err)
 			os.Exit(1)
