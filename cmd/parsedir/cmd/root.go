@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -8,7 +9,7 @@ import (
 
 	"github.com/PrashantRaj18198/parsedir/pkg/parser"
 	"github.com/spf13/cobra"
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 
 	"github.com/spf13/viper"
 )
@@ -22,6 +23,45 @@ type ParseDirFlags struct {
 }
 
 var ParseDirFlagsVar = ParseDirFlags{}
+
+func Completions() *cobra.Command {
+	var fileName string
+	c := &cobra.Command{
+		Use:       "completion [shell]",
+		Short:     "Generate auto complete for given shell",
+		Args:      cobra.OnlyValidArgs,
+		ValidArgs: []string{"bash", "fish", "zsh", "powershell"},
+		RunE: func(cmd *cobra.Command, args []string) error {
+			if len(args) == 0 {
+				return errors.New("atleast one argument is required")
+			}
+			cmd.SilenceUsage = true
+			switch args[0] {
+			case "bash":
+				if fileName == "" {
+					rootCmd.GenBashCompletion(os.Stdout)
+				}
+			case "fish":
+				if fileName == "" {
+					rootCmd.GenFishCompletion(os.Stdout, true)
+				}
+			case "zsh":
+				if fileName == "" {
+					rootCmd.GenZshCompletion(os.Stdout)
+				}
+			case "powershell":
+				if fileName == "" {
+					rootCmd.GenPowerShellCompletion(os.Stdout)
+				}
+			default:
+				fmt.Fprintf(os.Stderr, "%s is not a supported shell", args[0])
+			}
+			return nil
+		},
+	}
+	c.Flags().StringVarP(&fileName, "file", "f", "", "the name of the file to save the autocomplete script to")
+	return c
+}
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
