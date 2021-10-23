@@ -1,3 +1,5 @@
 res/
 ./parsedir
 ./cmd/parsedir/parsedir
+dist/
+completions/
