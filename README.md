@@ -18,11 +18,13 @@ mv parsedir /usr/bin/
 
 Example folder structure:
 
+```
 |example
 |---- {{.dog.name}}
 |-------- {{dog.name}}.yaml
 |---- {{range .pets}}{{.name}}
 |-------- detail.txt
+```
 
 ```bash
 # Run the below command to see parsedir in action
