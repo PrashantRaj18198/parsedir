@@ -1,0 +1,44 @@
+{
+  "apartments": [
+    {
+      "name": "earth",
+      "blocks": [
+        {
+          "name": "A",
+          "flats": [
+            {
+              "name": "101",
+              "number_of_members": 3
+            }
+          ]
+        },
+        {
+          "name": "B",
+          "flats": [
+            {
+              "name": "102",
+              "number_of_members": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "fire",
+      "blocks": [
+        {
+          "name": "a",
+          "flats": [
+            {
+              "name": "001",
+              "number_of_members": 5
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "city": {
+    "name": "tokyo"
+  }
+}

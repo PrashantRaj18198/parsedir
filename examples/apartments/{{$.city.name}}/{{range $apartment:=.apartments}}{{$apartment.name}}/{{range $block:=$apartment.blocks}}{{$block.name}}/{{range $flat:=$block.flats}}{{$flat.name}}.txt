@@ -1,0 +1,1 @@
+I am from @ {{$flat.name}}, {{$block.name}}, {{$apartment.name}} where {{$flat.number_of_members}} members live.

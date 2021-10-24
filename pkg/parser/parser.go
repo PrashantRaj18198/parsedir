@@ -2,7 +2,6 @@ package parser
 
 import (
 	"bytes"
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -10,10 +9,6 @@ import (
 	"regexp"
 	"strings"
 	"text/template"
-)
-
-var (
-	ErrMoreThanOneRangeInFilePathNotSupported error = errors.New("more-than-one-range-in-file-path-not-supported")
 )
 
 type FileInfo struct {
@@ -87,15 +82,9 @@ func PopulateAllFiles(files []*FileInfo, data interface{}) ([]*FileInfo, error) 
 	for _, f := range files {
 		fmt.Fprintf(os.Stdout, "Parsing path '%s'\n", f.Path)
 		matches := re.FindAllString(f.Path, -1)
-		if len(matches) > 1 {
-			return out, ErrMoreThanOneRangeInFilePathNotSupported
-		}
-		var val *string
-		if len(matches) == 1 {
-			val = &matches[0]
-		}
 		fmt.Fprintf(os.Stdout, "matches %s", f.Path)
-		currOut, err := populateFile(f, data, val)
+		fmt.Fprintf(os.Stdout, "\nmatches %+v\n", matches)
+		currOut, err := populateFile(f, data, matches...)
 		if err != nil && MissingVariableCurr == MissingVariableError {
 			return out, err
 		}
@@ -108,16 +97,16 @@ func PopulateAllFiles(files []*FileInfo, data interface{}) ([]*FileInfo, error) 
 // populateFile returns single or multiple file in a slice of fileinfo
 // if the file is a ranged file, pass a string to the rangedString
 // otherwise, pass a nil value inplace of rangedString pointer
-func populateFile(f *FileInfo, data interface{}, rangedString *string) ([]*FileInfo, error) {
+func populateFile(f *FileInfo, data interface{}, rangedStrings ...string) ([]*FileInfo, error) {
 	out := []*FileInfo{}
 	filePathWithoutRange := re.ReplaceAllString(f.Path, "")
 
 	var err error
 	var parsedPath string
-	if rangedString != nil {
-		parsedPath, err = parseRangedString(filePathWithoutRange, data, *rangedString)
+	if len(rangedStrings) > 0 {
+		parsedPath, err = parseRangedString(filePathWithoutRange, data, rangedStrings...)
 	}
-	if rangedString == nil {
+	if len(rangedStrings) == 0 {
 		parsedPath, err = parseTemplate(filePathWithoutRange, data)
 	}
 	if err != nil {
@@ -130,11 +119,11 @@ func populateFile(f *FileInfo, data interface{}, rangedString *string) ([]*FileI
 		return out, err
 	}
 	var parsedContent string
-	if rangedString != nil {
+	if len(rangedStrings) > 0 {
 
-		parsedContent, err = parseRangedString(f.Content, data, *rangedString)
+		parsedContent, err = parseRangedString(f.Content, data, rangedStrings...)
 	}
-	if rangedString == nil {
+	if len(rangedStrings) == 0 {
 		parsedContent, err = parseTemplate(f.Content, data)
 	}
 	if err != nil {
@@ -145,10 +134,16 @@ func populateFile(f *FileInfo, data interface{}, rangedString *string) ([]*FileI
 	return out, err
 }
 
-func parseRangedString(tmplString string, data interface{}, rangedString string) (string, error) {
-	parseString := fmt.Sprintf(`%s
-%s
-%s{{ end }}`, rangedString, tmplString, Seperator)
+func parseRangedString(tmplString string, data interface{}, rangedStrings ...string) (string, error) {
+
+	rangedStringsJoined := strings.Join(rangedStrings, "\n")
+	ends := []string{}
+	for range rangedStrings {
+		ends = append(ends, "{{end}}")
+	}
+	endsJoined := strings.Join(ends, "\n")
+
+	parseString := fmt.Sprintf("%s\n%s%s\n%s", rangedStringsJoined, tmplString, Seperator, endsJoined)
 	return parseTemplate(parseString, data)
 }
 
