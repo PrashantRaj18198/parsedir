@@ -12,18 +12,18 @@ func WriteFile(out []byte, fileName string) error {
 	if shouldCreateFolder {
 		err := os.MkdirAll(folderPath, os.ModePerm)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "Could not create folder. Err: %v", err)
+			fmt.Fprintf(os.Stderr, "Could not create folder. Err: %v\n", err)
 			return err
 		}
 	}
 
 	err := ioutil.WriteFile(fileName, out, 0644)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Failed to write to file. Err: %v", err)
+		fmt.Fprintf(os.Stderr, "Failed to write to file. Err: %v\n", err)
 		return err
 	}
 
-	fmt.Fprintf(os.Stdout, "Generated file with name %s", fileName)
+	fmt.Fprintf(os.Stdout, "Generated file with name %s\n", fileName)
 	return nil
 }
 

@@ -82,8 +82,6 @@ func PopulateAllFiles(files []*FileInfo, data interface{}) ([]*FileInfo, error) 
 	for _, f := range files {
 		fmt.Fprintf(os.Stdout, "Parsing path '%s'\n", f.Path)
 		matches := re.FindAllString(f.Path, -1)
-		fmt.Fprintf(os.Stdout, "matches %s", f.Path)
-		fmt.Fprintf(os.Stdout, "\nmatches %+v\n", matches)
 		currOut, err := populateFile(f, data, matches...)
 		if err != nil && MissingVariableCurr == MissingVariableError {
 			return out, err
@@ -166,7 +164,6 @@ func getFileInfoFromParsed(path string, content string) ([]*FileInfo, error) {
 	out := []*FileInfo{}
 	paths := strings.Split(path, Seperator)
 	contents := strings.Split(content, Seperator)
-	fmt.Fprintf(os.Stdout, "paths %d contents %d", len(paths), len(contents))
 	if len(paths) != len(contents) {
 		fmt.Printf("wrong path lens")
 	}
