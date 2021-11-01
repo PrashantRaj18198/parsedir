@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"regexp"
 
 	"github.com/PrashantRaj18198/parsedir/pkg/parser"
 	"github.com/spf13/cobra"
@@ -21,6 +22,7 @@ type ParseDirFlags struct {
 	VariablesFile string
 	TemplateDir   string
 	OutputDir     string
+	Replacements  map[string]string
 }
 
 var ParseDirFlagsVar = ParseDirFlags{}
@@ -86,8 +88,6 @@ Example folder structure:
 ./parse --vars-file=config.yaml --template-dir example/ --out-dir result/
 The filepath will be generated from the config.yaml and written to result/ dir.
 `,
-	// Uncomment the following line if your bare application
-	// has an action associated with it:
 	RunE: func(cmd *cobra.Command, args []string) error {
 		files, err := parser.RecurseThroughDir(ParseDirFlagsVar.TemplateDir)
 		if err != nil {
@@ -107,10 +107,10 @@ The filepath will be generated from the config.yaml and written to result/ dir.
 		string_data := string(data)
 		var out interface{}
 		if string_data[0] == '{' || string_data[0] == '[' {
-			fmt.Fprintf(os.Stdout, "File passed is in json format.")
+			fmt.Fprintf(os.Stdout, "File passed is in json format.\n")
 			err = json.Unmarshal(data, &out)
 		} else {
-			fmt.Fprintf(os.Stdout, "File passed is in yaml format.")
+			fmt.Fprintf(os.Stdout, "File passed is in yaml format.\n")
 			err = yaml.Unmarshal(data, &out)
 		}
 		if err != nil {
@@ -123,7 +123,13 @@ The filepath will be generated from the config.yaml and written to result/ dir.
 			os.Exit(1)
 		}
 		for _, f := range parsedFiles {
-			fmt.Fprintf(os.Stdout, "name \n%s\n", f.Path)
+			for key, val := range ParseDirFlagsVar.Replacements {
+				re, err := regexp.Compile(key)
+				if err != nil {
+					return err
+				}
+				f.Path = string(re.ReplaceAll([]byte(f.Path), []byte(val)))
+			}
 			parser.WriteFile([]byte(f.Content), filepath.Join(ParseDirFlagsVar.OutputDir, f.Path))
 		}
 		return nil
@@ -152,6 +158,7 @@ func init() {
 	rootCmd.Flags().StringVar(&ParseDirFlagsVar.TemplateDir, "template-dir", "", "The directory which has the templates")
 	rootCmd.MarkFlagRequired("template-dir")
 	rootCmd.Flags().StringVar(&ParseDirFlagsVar.OutputDir, "out-dir", "", "The base directory where the output needs to be written to")
+	rootCmd.Flags().StringToStringVar(&ParseDirFlagsVar.Replacements, "replace", map[string]string{}, "Replace key with value. Key must be a valid regex")
 
 }
 
