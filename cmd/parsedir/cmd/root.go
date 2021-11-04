@@ -28,7 +28,6 @@ type ParseDirFlags struct {
 var ParseDirFlagsVar = ParseDirFlags{}
 
 func Completions() *cobra.Command {
-	var fileName string
 	c := &cobra.Command{
 		Use:       "completion [shell]",
 		Short:     "Generate auto complete for given shell",
@@ -41,28 +40,19 @@ func Completions() *cobra.Command {
 			cmd.SilenceUsage = true
 			switch args[0] {
 			case "bash":
-				if fileName == "" {
-					rootCmd.GenBashCompletion(os.Stdout)
-				}
+				rootCmd.GenBashCompletion(os.Stdout)
 			case "fish":
-				if fileName == "" {
-					rootCmd.GenFishCompletion(os.Stdout, true)
-				}
+				rootCmd.GenFishCompletion(os.Stdout, true)
 			case "zsh":
-				if fileName == "" {
-					rootCmd.GenZshCompletion(os.Stdout)
-				}
+				rootCmd.GenZshCompletion(os.Stdout)
 			case "powershell":
-				if fileName == "" {
-					rootCmd.GenPowerShellCompletion(os.Stdout)
-				}
+				rootCmd.GenPowerShellCompletion(os.Stdout)
 			default:
 				fmt.Fprintf(os.Stderr, "%s is not a supported shell", args[0])
 			}
 			return nil
 		},
 	}
-	c.Flags().StringVarP(&fileName, "file", "f", "", "the name of the file to save the autocomplete script to")
 	return c
 }
 
